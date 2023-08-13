@@ -1,6 +1,7 @@
-import type { JSX } from 'react';
 import { useState } from 'react';
 import Select from 'react-select';
+
+import './App.scss';
 
 type CustomOption = { label: string } & (
   | { value: string; selected?: boolean }
@@ -19,7 +20,7 @@ const defaultOptions: CustomOption[] = [
   },
 ];
 
-const getSelected = (options: CustomOption[]): CustomOption[] => {
+const getSelected = (options: CustomOption[]) => {
   const result: CustomOption[] = [];
   const stack = [options];
   while (stack.length) {
@@ -36,7 +37,9 @@ const getSelected = (options: CustomOption[]): CustomOption[] => {
 };
 
 const selectOption = (options: CustomOption[], value: string) => {
-  const stack = [options];
+  const clonedOptions = structuredClone(options);
+
+  const stack = [clonedOptions];
   while (stack.length) {
     const opt = stack.pop() as CustomOption[];
     for (const element of opt) {
@@ -47,25 +50,24 @@ const selectOption = (options: CustomOption[], value: string) => {
       }
     }
   }
+
+  return clonedOptions;
 };
 
-export const App = (): JSX.Element => {
+export const App = () => {
   const [options, setOptions] = useState<CustomOption[]>(defaultOptions);
   const value = getSelected(options);
-
-  // eslint-disable-next-line no-console
-  console.log('HKOLEV: App.tsx | options', JSON.stringify(options, null, 2));
 
   return (
     <div className="text text-center">
       <Select
+        classNamePrefix="custom-react-select"
+        maxMenuHeight={150}
         options={options}
         value={value}
         onChange={(selectedOption) => {
           if (selectedOption && 'value' in selectedOption) {
-            const clonedOptions = structuredClone(options);
-            selectOption(clonedOptions, selectedOption.value);
-            setOptions(clonedOptions);
+            setOptions(selectOption(options, selectedOption.value));
           }
         }}
       />
